@@ -9,6 +9,10 @@ output:
     number_sections: true
     fig_width: 10
     fig_height: 8
+vignette: >
+  %\VignetteIndexEntry{gsean}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 
