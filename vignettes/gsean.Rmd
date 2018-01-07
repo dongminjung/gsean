@@ -1,0 +1,163 @@
+---
+title: "Gene Set Enrichment Analysis with Networks"
+author: "Dongmin Jung"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    fig_width: 10
+    fig_height: 8
+---
+
+
+
+
+<br><br>
+
+# Introduction
+
+Biological molecules in a living organism seldom work individually. They usually interact each other in a cooperative way. Biological process is too complicated to understand without considering such interactions. These associations can be conveniently represented as networks (graphs) with nodes (vertices) for molecules and links (edges) for interactions between them. Thus, network-based procedures can be seen as powerful methods for studying complex process. For example, cancer may be better characterized by frequently mutated or dysregulated pathways than driver mutations. However, many methods are devised for analyzing individual genes. It is said that techniques based on biological networks such as gene co-expression are more precise ways to represent information than those using lists of genes only. This package is aimed to integrate the gene expression and biological network. A biological network is constructed from gene expression data and it is used for Gene Set Enrichment Analysis.
+
+Recently, network module-based methods have been proposed as a powerful tool to analyze and interpret gene expression data. For example, a co-expression gene network exhibit distinctive connection structures, including their topologies. In particular, the highly connected genes, or hub genes located at the functional center of the network, should have a high tendency to be associated with their phenotypic outcome. In case that a pathway is represented as a network with nodes and edges, its topology is essential for evaluating the importance of the pathway. However, the widely used statistical methods were designed for individual genes, which may detect too many irrelevant significantly genes or too few genes to describe the phenotypic changes. One possible reason is that most of the existing functional enrichment analyses ignore topological information. Therfore, they are limited for applicability. To overcome this limitation, the original functional enrichment method is extended by assigning network centralities as node weights. The rationale behind this is that all nodes are not equally important because of hub genes. A fundamental problem in the analysis of complex networks is the determination of how important a certain node is. Centrality measures such as node strength show how influential that node is in the overall network. It assigns relative scores to all nodes within the graph. For simplicity, degree centrality or node strength is used as a centrality measure by default. For over-representation analysis, the label propagation algorithm is employed to score nodes in this package.
+
+
+
+
+
+
+<br><br>
+
+# Example
+
+
+## GSEA with the list of genes, based on the label propagation
+
+Label propagation is a semi-supervised learning that assigns labels for unlabelled nodes in a network. Each node will be labeled, based on the corresponding score. These score can be used as a statistic for GSEA. Thus ORA can be performed by GSEA. For the example of GSEA for the label propagation, consider Lung Adenocarcinoma data from TCGA. We have set our threshold to 0.8, so only those nodes with similarities higher than 0.8 will be considered neighbors. Consider recurrently mutated genes from MutSig and KEGG pathways. In the result, we can see that these mutated genes are enriched at cancer relevant signaling pathways such as ERBB and MAPK pathways.
+
+
+```{r, fig.align='center', message=FALSE, warning=FALSE, eval=FALSE}
+library(gsean)
+library(TCGAbiolinks)
+library(DESeq2)
+library(PPInfer)
+library(plotly)
+# TCGA LUAD
+query <- GDCquery(project = "TCGA-LUAD",
+                  data.category = "Gene expression",
+                  data.type = "Gene expression quantification",
+                  platform = "Illumina HiSeq", 
+                  file.type  = "normalized_results",
+                  experimental.strategy = "RNA-Seq",
+                  legacy = TRUE)
+GDCdownload(query, method = "api")
+invisible(capture.output(data <- GDCprepare(query)))
+exprs.LUAD <- assay(data)
+# remove duplicated gene names
+exprs.LUAD <- exprs.LUAD[-which(duplicated(rownames(exprs.LUAD))),]
+# list of genes
+recur.mut.gene <- c("KRAS", "TP53", "STK11", "RBM10", "SPATA31C1", "KRTAP4-11",
+                    "DCAF8L2", "AGAP6", "KEAP1", "SETD2", "ZNF679", "FSCB",
+                    "BRAF", "ZNF770", "U2AF1", "SMARCA4", "HRNR", "EGFR")
+
+# KEGG.hsa
+load(system.file("data", "KEGG.hsa.rda", package = "gsean"))
+
+# GSEA
+set.seed(1)
+result.GSEA <- gsean(KEGG.hsa, recur.mut.gene, exprs.LUAD, threshold = 0.8)
+invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
+                                           score = 'NES', pvalue = 'padj',
+                                           sort = 'padj', top = 20)))
+p <- p + scale_fill_gradient(low = "red", high = "blue") +
+  theme(plot.margin = margin(10, 10, 10, 75))
+ggplotly(p + guides(fill = FALSE))
+```
+
+
+
+
+
+<br>
+
+## GSEA with statistics, based on the degree centrality
+
+Gene expression data are analyzed to identify differentially expressed genes. Consider *pasilla* RNA-seq count data. By using the Wald statistic in this example, GSEA can be performed with Gene Ontology terms from http://www.go2msig.org/cgi-bin/prebuilt.cgi?taxid=7227. Thus, it is expected that we may find the biological functions related to change in phenotype from the network, rather than individual genes.
+
+```{r, fig.align='center', message=FALSE, warning=FALSE, eval=TRUE}
+library(gsean)
+library(pasilla)
+library(DESeq2)
+library(PPInfer)
+library(plotly)
+# pasilla count data
+pasCts <- system.file("extdata", "pasilla_gene_counts.tsv",
+                      package = "pasilla", mustWork = TRUE)
+cts <- as.matrix(read.csv(pasCts, sep="\t", row.names = "gene_id"))
+condition <- factor(c(rep("untreated", 4), rep("treated", 3)))
+dds <- DESeqDataSetFromMatrix(
+  countData = cts,
+  colData   = data.frame(condition),
+  design    = ~ 0 + condition)
+# filtering
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+# differentially expressed genes
+dds <- DESeq(dds)
+resultsNames(dds)
+res <- results(dds, contrast = list("conditiontreated", "conditionuntreated"), listValues = c(1, -1))
+statistic <- res$stat
+names(statistic) <- rownames(res)
+exprs.pasilla <- counts(dds, normalized = TRUE)
+
+# convert gene id
+library(org.Dm.eg.db)
+gene.id <- AnnotationDbi::select(org.Dm.eg.db, names(statistic), "ENTREZID", "FLYBASE")
+names(statistic) <- gene.id[,2]
+rownames(exprs.pasilla) <- gene.id[,2]
+
+# GO.dme
+load(system.file("data", "GO.dme.rda", package = "gsean"))
+
+# GSEA
+set.seed(1)
+result.GSEA <- gsean(GO.dme, statistic, exprs.pasilla)
+invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
+                                           score = 'NES', top = 50, pvalue = 'padj',
+                                           sort = 'padj', decreasing = FALSE,
+                                           numChar = 110)))
+p <- p + scale_fill_continuous(low = 'red', high = 'green') +
+  theme(plot.margin = margin(10, 10, 10, 50))
+ggplotly(p)
+```
+
+
+
+
+
+<br><br>
+
+# Session info
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+
+
+
+<br><br>
+
+# References
+
+Gu, Z., Liu, J., Cao, K., Zhang, J., & Wang, J. (2012). Centrality-based pathway enrichment: a systematic approach for finding significant pathways dominated by key genes. BMC systems biology, 6(1), 56.
+
+
+Wu, J. (2016). Transcriptomics and Gene Regulation. Springer.
+
+
+Zhang, W., Chien, J., Yong, J., & Kuang, R. (2017). Network-based machine learning and graph theory algorithms for precision oncology. npj Precision Oncology, 1(1), 25.
+
+<br>
+
