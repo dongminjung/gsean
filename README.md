@@ -16,9 +16,9 @@ Author: Dongmin Jung
 
 Maintainer: Dongmin Jung <dmdmjung@gmail.com>
 
-Depends: R (>= 3.4), fgsea
+Depends: R (>= 3.4), fgsea, PPInfer
 
-Suggests: DESeq2, RANKS, WGCNA
+Suggests: DESeq2, knitr, plotly, RANKS, WGCNA
 
 License: Artistic-2.0
 

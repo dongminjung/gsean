@@ -46,7 +46,6 @@ library(gsean)
 library(TCGAbiolinks)
 library(DESeq2)
 library(PPInfer)
-library(plotly)
 # TCGA LUAD
 query <- GDCquery(project = "TCGA-LUAD",
                   data.category = "Gene expression",
@@ -76,7 +75,7 @@ invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
                                            sort = 'padj', top = 20)))
 p <- p + scale_fill_gradient(low = "red", high = "blue") +
   theme(plot.margin = margin(10, 10, 10, 75))
-ggplotly(p + guides(fill = FALSE))
+plotly::ggplotly(p + guides(fill = FALSE))
 ```
 
 
@@ -94,7 +93,6 @@ library(gsean)
 library(pasilla)
 library(DESeq2)
 library(PPInfer)
-library(plotly)
 # pasilla count data
 pasCts <- system.file("extdata", "pasilla_gene_counts.tsv",
                       package = "pasilla", mustWork = TRUE)
@@ -133,7 +131,7 @@ invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
                                            numChar = 110)))
 p <- p + scale_fill_continuous(low = 'red', high = 'green') +
   theme(plot.margin = margin(10, 10, 10, 50))
-ggplotly(p)
+plotly::ggplotly(p)
 ```
 
 
