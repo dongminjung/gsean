@@ -22,7 +22,9 @@ Suggests: DESeq2, RANKS, WGCNA
 
 License: Artistic-2.0
 
-biocViews: Software, Statistical Method, Network, Graph And Network, GeneSetEnrichment
+biocViews: Software, StatisticalMethod, Network, GraphAndNetwork,
+          GeneSetEnrichment, GeneExpression, NetworkEnrichment,
+          Pathways, DifferentialExpression
 
 NeedsCompilation: no
 
