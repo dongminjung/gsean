@@ -1,6 +1,7 @@
 ---
 title: "Gene Set Enrichment Analysis with Networks"
 author: "Dongmin Jung"
+date: January 24, 2018
 output:
   rmarkdown::html_document:
     highlight: pygments
@@ -24,7 +25,7 @@ vignette: >
 
 Biological molecules in a living organism seldom work individually. They usually interact each other in a cooperative way. Biological process is too complicated to understand without considering such interactions. These associations can be conveniently represented as networks (graphs) with nodes (vertices) for molecules and links (edges) for interactions between them. Thus, network-based procedures can be seen as powerful methods for studying complex process. For example, cancer may be better characterized by frequently mutated or dysregulated pathways than driver mutations. However, many methods are devised for analyzing individual genes. It is said that techniques based on biological networks such as gene co-expression are more precise ways to represent information than those using lists of genes only. This package is aimed to integrate the gene expression and biological network. A biological network is constructed from gene expression data and it is used for Gene Set Enrichment Analysis.
 
-Recently, network module-based methods have been proposed as a powerful tool to analyze and interpret gene expression data. For example, a co-expression gene network exhibit distinctive connection structures, including their topologies. In particular, the highly connected genes, or hub genes located at the functional center of the network, should have a high tendency to be associated with their phenotypic outcome. In case that a pathway is represented as a network with nodes and edges, its topology is essential for evaluating the importance of the pathway. However, the widely used statistical methods were designed for individual genes, which may detect too many irrelevant significantly genes or too few genes to describe the phenotypic changes. One possible reason is that most of the existing functional enrichment analyses ignore topological information. Therfore, they are limited for applicability. To overcome this limitation, the original functional enrichment method is extended by assigning network centralities as node weights. The rationale behind this is that all nodes are not equally important because of hub genes. A fundamental problem in the analysis of complex networks is the determination of how important a certain node is. Centrality measures such as node strength show how influential that node is in the overall network. It assigns relative scores to all nodes within the graph. For simplicity, degree centrality or node strength is used as a centrality measure by default. For over-representation analysis, the label propagation algorithm is employed to score nodes in this package.
+Recently, network module-based methods have been proposed as a powerful tool to analyze and interpret gene expression data. For example, a co-expression gene network exhibit distinctive connection structures, including their topologies. In particular, the highly connected genes, or hub genes located at the functional center of the network, should have a high tendency to be associated with their phenotypic outcome. In case that a pathway is represented as a network with nodes and edges, its topology is essential for evaluating the importance of the pathway. However, the widely used statistical methods were designed for individual genes, which may detect too many irrelevant significantly genes or too few genes to describe the phenotypic changes. One possible reason is that most of the existing functional enrichment analyses ignore topological information. Therfore, they are limited for applicability. To overcome this limitation, the original functional enrichment method is extended by assigning network centralities such as node weights. The rationale behind this is that all nodes are not equally important because of hub genes. A fundamental problem in the analysis of complex networks is the determination of how important a certain node is. Centrality measures such as node strength show how influential that node is in the overall network. It assigns relative scores to all nodes within the graph. For simplicity, degree centrality or node strength is used as a centrality measure by default. For over-representation analysis, the label propagation algorithm is employed to score nodes in this package.
 
 
 
@@ -64,12 +65,12 @@ recur.mut.gene <- c("KRAS", "TP53", "STK11", "RBM10", "SPATA31C1", "KRTAP4-11",
                     "DCAF8L2", "AGAP6", "KEAP1", "SETD2", "ZNF679", "FSCB",
                     "BRAF", "ZNF770", "U2AF1", "SMARCA4", "HRNR", "EGFR")
 
-# KEGG.hsa
-load(system.file("data", "KEGG.hsa.rda", package = "gsean"))
+# KEGG_hsa
+load(system.file("data", "KEGG_hsa.rda", package = "gsean"))
 
 # GSEA
 set.seed(1)
-result.GSEA <- gsean(KEGG.hsa, recur.mut.gene, exprs.LUAD, threshold = 0.8)
+result.GSEA <- gsean(KEGG_hsa, recur.mut.gene, exprs.LUAD, threshold = 0.8)
 invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
                                            score = 'NES', pvalue = 'padj',
                                            sort = 'padj', top = 20)))
@@ -119,12 +120,12 @@ gene.id <- AnnotationDbi::select(org.Dm.eg.db, names(statistic), "ENTREZID", "FL
 names(statistic) <- gene.id[,2]
 rownames(exprs.pasilla) <- gene.id[,2]
 
-# GO.dme
-load(system.file("data", "GO.dme.rda", package = "gsean"))
+# GO_dme
+load(system.file("data", "GO_dme.rda", package = "gsean"))
 
 # GSEA
 set.seed(1)
-result.GSEA <- gsean(GO.dme, statistic, exprs.pasilla)
+result.GSEA <- gsean(GO_dme, statistic, exprs.pasilla)
 invisible(capture.output(p <- GSEA.barplot(result.GSEA, category = 'pathway',
                                            score = 'NES', top = 50, pvalue = 'padj',
                                            sort = 'padj', decreasing = FALSE,
