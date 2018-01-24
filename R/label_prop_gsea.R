@@ -1,5 +1,5 @@
 # label propagation for GSEA
-label.prop.gsea <- function(geneset, x, adjacency, threshold = 0.99, nperm = 1000,
+label_prop_gsea <- function(geneset, x, adjacency, threshold = 0.99, nperm = 1000,
                             minSize = 1, maxSize = Inf, gseaParam = 1, nproc = 0,
                             BPPARAM = NULL, ...)
 {

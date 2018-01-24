@@ -1,5 +1,5 @@
 # centrality measure for GSEA
-centrality.gsea <- function(geneset, x, adjacency, pseudo = 1, nperm = 1000,
+centrality_gsea <- function(geneset, x, adjacency, pseudo = 1, nperm = 1000,
                             centrality = function(x) rowSums(abs(x)),
                             weightParam = 1, minSize = 1, maxSize = Inf,
                             gseaParam = 1, nproc = 0, BPPARAM = NULL)
