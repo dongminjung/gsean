@@ -68,9 +68,10 @@ fgsea::fgsea, RANKS::label.prop
 \examples{
 data(examplePathways)
 data(exampleRanks)
+exampleRanks <- exampleRanks[1:100]
 geneNames <- names(exampleRanks)
 set.seed(1)
-x <- sample(geneNames, 100)
+x <- sample(geneNames, 10)
 adjacency <- diag(length(exampleRanks))
 rownames(adjacency) <- geneNames
 result.GSEA <- label_prop_gsea(examplePathways, x, adjacency)
