@@ -11,7 +11,7 @@ http://www.go2msig.org/cgi-bin/prebuilt.cgi?taxid=7227
 }
 
 \usage{
-GO_dma
+GO_dme
 }
 
 \description{
