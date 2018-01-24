@@ -72,6 +72,7 @@ fgsea::fgsea
 \examples{
 data(examplePathways)
 data(exampleRanks)
+exampleRanks <- exampleRanks[1:100]
 adjacency <- diag(length(exampleRanks))
 rownames(adjacency) <- names(exampleRanks)
 set.seed(1)

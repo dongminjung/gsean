@@ -78,12 +78,13 @@ Dongmin Jung
 
 
 \seealso{
-exprs2adj, label.prop.gsea, centrality.gsea
+exprs2adj, label_prop_gsea, centrality_gsea
 }
 
 \examples{
 data(examplePathways)
 data(exampleRanks)
+exampleRanks <- exampleRanks[1:100]
 Names <- names(exampleRanks)
 exprs <- matrix(rnorm(10*length(exampleRanks)), ncol = 10)
 rownames(exprs) <- names(exampleRanks)
